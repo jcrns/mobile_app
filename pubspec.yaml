@@ -20,6 +20,11 @@ version: 1.0.0+1
 environment:
   sdk: ">=2.7.0 <3.0.0"
 
+dependency_overrides:
+  # Override path_provider to pick up fixes for FFI changes.
+  path_provider: ^2.0.0-nullsafety.1
+  
+  
 dependencies:
   flutter:
     sdk: flutter

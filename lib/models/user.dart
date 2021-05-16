@@ -7,7 +7,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 String hostname = 'http://127.0.0.1:8000';
 
 // ID Token
-String globalToken = "6b5ff06cd72f3f0ab8ba213f18b895bc381045e0";
+String globalToken = "";
 
 // Start and number
 int requestStart = 1;
@@ -105,23 +105,25 @@ class User {
     );
     print(response.body);
     Map<String, dynamic> map = json.decode(response.body);
+    print("map");
+    print(map);
     var newToken = map["token"];
+
+    
     print("token login");
     print(newToken);
-    var result = 'success';
     if(newToken == '' ||  newToken == null){
       result = 'failed';
+      token = '';
+
     } else {
 
       // Saving user login data
-      globalToken = newToken;
       token = newToken;
-      SharedPref sharedPref = SharedPref();
-      await sharedPref.save("user", map);
 
     }
     print(token);
-    return result; 
+    return token; 
   }
 
   Future<String> loginUser() async {

@@ -228,15 +228,29 @@ class _HomeScreenState extends State<HomeScreen>
                         children: <Widget>[
                           ListTile(
                             title: Text('Sign Up'),
-                            onTap: () {
-                              Navigator.push(context,
+                            onTap: () async{
+                              
+                              Navigator.pop(context);
+
+                              // Assinging result to signup screen navigation
+                              String results = await Navigator.push(context,
                               MaterialPageRoute(builder: (context) => SignUpScreen())
                               );
+
+                              // Checking if result is success
+                              if (results == 'success'){
+
+                                // Reloading App
+                                setState(() {
+                                  futureData = getDataApi();
+                                });
+                              }
                             },
                           ),
                           ListTile(
                             title: Text('Login'),
                             onTap: () async{
+                              Navigator.pop(context);
 
                               // Assinging result to login screen navigation
                               String results = await Navigator.push(context,
