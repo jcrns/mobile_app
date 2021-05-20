@@ -7,6 +7,7 @@ import 'pages/filter/filters_screen.dart';
 import 'pages/filter/hotel_app_theme.dart';
 import 'pages/login.dart';
 import 'pages/signup.dart';
+import 'pages/addbusiness.dart';
 import 'dart:convert';
 import 'dart:async';
 
@@ -18,6 +19,20 @@ class HomeScreen extends StatefulWidget {
   _HomeScreenState createState() => _HomeScreenState();
 }
 
+var categories = [
+  "marketing",
+  "restraunts",
+  "argriculture",
+  "technology",
+  "clothing",
+  "design",
+  "accessories",
+  "media",
+  "medical",
+  "cosmetics",
+  "travel",
+  // "other",
+];
 // Defining politician as global var
 var politician = Politician();
 
@@ -38,6 +53,8 @@ class _HomeScreenState extends State<HomeScreen>
   bool loadedState = false;
 
   Future<User> futureData = getDataApi();
+
+  
   @override
   void initState() {
     // if(loadedState == false) {
@@ -197,9 +214,12 @@ class _HomeScreenState extends State<HomeScreen>
               ),
               ListTile(
                 title: Text('Add My Business'),
-                onTap: () {
+                onTap: () async{
                   // Update the state of the app.
                   // ...
+                  String results = await Navigator.push(context,
+                  MaterialPageRoute(builder: (context) => AddBusinessScreen())
+                  );
                 },
               ),
               FutureBuilder<User>(
@@ -330,7 +350,7 @@ Widget yourFavoritesSectionUI(){
                   scrollDirection: Axis.horizontal,
                   itemCount: 15,
                   itemBuilder: (BuildContext context, int index) => Card(
-                        child: Center(child: Text('Dummy Card Text')),
+                        child: Center(child: Text('Dummy Card Text $index')),
                       ),
                 ),
               ),
@@ -443,20 +463,30 @@ Widget scrollControlUI(){
               physics: ClampingScrollPhysics(),
               shrinkWrap: true,
               scrollDirection: Axis.horizontal,
-              itemCount: 15,
+              itemCount: categories.length,
               itemBuilder: (BuildContext context, int index) => Card(
                     child: Center(
-                      child: Text(
-                        'Dummy Card Text'
+                      child: Image(
+                        image: AssetImage('assets/category_images/${categories[index]}.jpeg'),
                       )
+                      
+                      // Text(
+                      //   'Dummy Card Text $index'
+                      // )
                     ),
                   ),
             ),
           ),
         ),
-        Text( 
-          'Demo Headline 2',
-          style: TextStyle(fontSize: 18),
+        Padding(
+          padding: const EdgeInsets.only(left: 10, right: 0, top: 25, bottom: 0),
+          child: Text( 
+            'Blogs',
+            style: TextStyle(
+              fontSize: 24,
+            ),
+              textAlign: TextAlign.left,
+          ),
         ),
 
 
