@@ -27,7 +27,6 @@ class _AddBusinessScreenState extends State<AddBusinessScreen>
   TextEditingController businessPhoneController = new TextEditingController();
   TextEditingController typeOfBusinessController = new TextEditingController();
 
-  List<Politicians> politicianList;
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,

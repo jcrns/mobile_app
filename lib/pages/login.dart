@@ -22,7 +22,6 @@ class _LoginScreenState extends State<LoginScreen>
   TextEditingController passwordController = new TextEditingController();
 
 
-  List<Politicians> politicianList;
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,

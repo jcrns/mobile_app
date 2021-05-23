@@ -1,5 +1,6 @@
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:project1010_flutter/models/user.dart';
+import 'package:project1010_flutter/models/organizations.dart';
 import 'package:project1010_flutter/fintness_app_theme.dart';
 import 'package:project1010_flutter/ui_view/card_view.dart';
 import 'package:flutter/material.dart';
@@ -33,14 +34,11 @@ var categories = [
   "travel",
   // "other",
 ];
-// Defining politician as global var
-var politician = Politician();
 
 class _HomeScreenState extends State<HomeScreen>
     with TickerProviderStateMixin {
   Animation<double> topBarAnimation;
   // AnimationController animationController;
-  List<Politicians> politicianList;
 
   List<Widget> listViews = <Widget>[];
   final ScrollController scrollController = ScrollController();
@@ -52,9 +50,18 @@ class _HomeScreenState extends State<HomeScreen>
   // If loadedState is true update function won't load on page 
   bool loadedState = false;
 
+  // Defining list views
+  List<Widget> nearbyMeListView = <Widget>[];
+
+  // Nearby Me Organization Count
+  int nearbyMeOrganizationCount = 0;
+
+  // Getting future user data
   Future<User> futureData = getDataApi();
 
-  
+  // Getting list of businesses
+  Future<Organizations> futureOrganizations;
+
   @override
   void initState() {
     // if(loadedState == false) {
@@ -92,10 +99,9 @@ class _HomeScreenState extends State<HomeScreen>
       if(scrollController.position.pixels == scrollController.position.maxScrollExtent){
 
         // Changing number var to ask for more results
-        numberStart += numberStart;
+        // numberStart += numberStart;
 
         // Running update function
-        _update();
         // getHotelViewList();
         // print(politician.politicians.length);
         // print(politician.politicians.length);
@@ -124,61 +130,17 @@ class _HomeScreenState extends State<HomeScreen>
     await Future<dynamic>.delayed(const Duration(milliseconds: 50));
     if(loadedState == false) {
       addAllListData();
-      await _update();
       loadedState = true;
       // getHotelViewList();
       print("Adding Lists");
     }
     return true;
   }
-  _update() async {
-    // Trying to update politician models
-    try {
-      print("politician");
-      print(politician);
-      var data = await politician.getPoliticianData();
-      // var _newUserData = await sharedPref.read('politcians');
-      print("data");
-      print(data);
-      var _newUserDataFormatted = json.decode(data);
-      Politician _newUserDataObject = Politician.fromJson(_newUserDataFormatted);
-      setState(() {
-        politician = _newUserDataObject;
-      });
-      print("politician.politicians[0].similarViews");
-      print(politician.politicians.length);
-
-    } catch(_) {
-      print('WTF');
-    }
-    // Trying to update user model
-    try {
-      SharedPref sharedPref = SharedPref();
-      var _newUser = await sharedPref.read('user');
-      print("please workl");
-      print(_newUser);
-      print("please work");
-      // var _newUserFormatted = json.decode(_newUser);
-      print("please work");
-      User _newUserObject = User.fromJson(_newUser);
-      print("_newUserDataFormatted");
-      print(_newUserObject);
-      user = _newUserObject;
-      print("_userData.stats.netWorth");
-      print(user.username);
-      List<Politicians> politicianList = politician.politicians;
-      setState(() {
-        user = _newUserObject;
-      });
-    } catch(_) {
-      print("user not found");
-    }
-    await getHotelViewList();
-    print("politicianCountergertgetrg");
-    politicianCount += numberStart;
-    print(politicianCount);
-
-    // addAllListData();
+  Future<bool> updateDataNearbyMe() async{
+    Organizations futureOrganizations = await getOrganizationsApi();
+    nearbyMeOrganizationCount += numberStart;
+    addNearbyMeListData(futureOrganizations);
+    return true;
   }
   @override
   Widget build(BuildContext context) {
@@ -414,6 +376,8 @@ Widget welcomeSectionUI(){
     },
   );
 }
+
+// Home Page Scroll Widget
 Widget scrollControlUI(){
   return SingleChildScrollView(
     child: Column(
@@ -422,62 +386,8 @@ Widget scrollControlUI(){
       children: <Widget>[
         welcomeSectionUI(),
         yourFavoritesSectionUI(),
-        Padding(
-          padding: const EdgeInsets.only(left: 10, right: 0, top: 8, bottom: 8),
-          child: Text(
-            'Nearby You',
-            style: TextStyle(fontSize: 24),
-            textAlign: TextAlign.left,
-          ),
-        ),
-        Padding(
-          padding: const EdgeInsets.only(left: 10, right: 0, top: 0, bottom: 0),
-          child: SizedBox(
-            height: 200.0,
-            child: ListView.builder(
-              physics: ClampingScrollPhysics(),
-              shrinkWrap: true,
-              scrollDirection: Axis.horizontal,
-              itemCount: 15,
-              itemBuilder: (BuildContext context, int index) => Card(
-                    child: Center(child: Text('Dummy Card Text')),
-                  ),
-            ),
-          ),
-        ),
-        Padding(
-          padding: const EdgeInsets.only(left: 10, right: 0, top: 0, bottom: 0),
-          child: Text(
-            'Categories',
-            style: TextStyle(
-              fontSize: 24,
-            ),
-            textAlign: TextAlign.left,
-          ),
-        ),
-        Padding(
-          padding: const EdgeInsets.only(left: 10, right: 0, top: 0, bottom: 0),
-          child: SizedBox(
-            height: 200.0,
-            child: ListView.builder(
-              physics: ClampingScrollPhysics(),
-              shrinkWrap: true,
-              scrollDirection: Axis.horizontal,
-              itemCount: categories.length,
-              itemBuilder: (BuildContext context, int index) => Card(
-                    child: Center(
-                      child: Image(
-                        image: AssetImage('assets/category_images/${categories[index]}.jpeg'),
-                      )
-                      
-                      // Text(
-                      //   'Dummy Card Text $index'
-                      // )
-                    ),
-                  ),
-            ),
-          ),
-        ),
+        nearbyBusinessesSectionUI(),
+        categoriesSectionUI(),
         Padding(
           padding: const EdgeInsets.only(left: 10, right: 0, top: 25, bottom: 0),
           child: Text( 
@@ -523,43 +433,115 @@ Widget scrollControlUI(){
 }
 
   // Categories Section
-  Widget categoriesSectionUI(){
+  Widget nearbyBusinessesSectionUI(){
+    return FutureBuilder<bool>(
+      future: updateDataNearbyMe(),
+      builder: (context, snapshot) {
+        print("snapshot.hasData");
+        print(snapshot.hasData);
+        if (snapshot.connectionState != ConnectionState.done) {
+            return Container();
+        } else if (snapshot.hasData) {
+          print("Loading Nearby Screen");
+          // print(snapshot.data[1].address);
+          // for (int g = 0; g < snapshot.data.length; g++) {
+            
+          // }
+          return Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Padding(
+                padding: const EdgeInsets.only(left: 10, right: 0, top: 8, bottom: 8),
+                child: Text(
+                  'Nearby You',
+                  style: TextStyle(fontSize: 24),
+                  textAlign: TextAlign.left,
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.only(left: 10, right: 0, top: 0, bottom: 0),
+                child: SizedBox(
+                  height: 200.0,
+                  child: ListView.builder(
+                    physics: ClampingScrollPhysics(),
+                    shrinkWrap: true,
+                    scrollDirection: Axis.horizontal,
+                    itemCount: listViews.length,
+                    itemBuilder: (BuildContext context, int index) {
+                      return listViews[index];
+                    }
+                  ),
+                ),
+              ),
+            ],
+          );
+        } else if (snapshot.hasError) {
+          return Container();
+        }
+        // By default, show a loading spinner.
+        return Container();
 
+      },
+    );
   }
 
-  Widget nearbyBusinessesSectionUI(){
+  addNearbyMeListData(Organizations organizations){
+    for (int g = 0; g < organizations.organizations.length; g++) {
+      int i = g + nearbyMeOrganizationCount;
+        listViews.add(
+          OrganizationListView(
+            callback: () {},
+            organizationData: organizations.organizations[i],
+          ),
+        ); 
+    }
+  }
 
+  Widget categoriesSectionUI(){
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Padding(
+          padding: const EdgeInsets.only(left: 10, right: 0, top: 0, bottom: 0),
+          child: Text(
+            'Categories',
+            style: TextStyle(
+              fontSize: 24,
+            ),
+            textAlign: TextAlign.left,
+          ),
+        ),
+        Padding(
+          padding: const EdgeInsets.only(left: 10, right: 0, top: 0, bottom: 0),
+          child: SizedBox(
+            height: 200.0,
+            child: ListView.builder(
+              physics: ClampingScrollPhysics(),
+              shrinkWrap: true,
+              scrollDirection: Axis.horizontal,
+              itemCount: categories.length,
+              itemBuilder: (BuildContext context, int index) => Card(
+                    child: Center(
+                      child: Image(
+                        image: AssetImage('assets/category_images/${categories[index]}.jpeg'),
+                      )
+                      
+                      // Text(
+                      //   'Dummy Card Text $index'
+                      // )
+                    ),
+                  ),
+            ),
+          ),
+        ),
+      ],
+    );
   }
 
   Widget blackOwnedBusinessesSectionUI(){
 
-  }
-
-  Widget getMainListViewUI() {
-    return FutureBuilder<bool>(
-      future: getData(),
-      builder: (BuildContext context, AsyncSnapshot<bool> snapshot) {
-        if (!snapshot.hasData) {
-          return const SizedBox();
-        } else {
-          return ListView.builder(
-            controller: scrollController,
-            padding: EdgeInsets.only(
-              top: AppBar().preferredSize.height +
-                  MediaQuery.of(context).padding.top +
-                  48,
-              bottom: 62 + MediaQuery.of(context).padding.bottom,
-            ),
-            itemCount: listViews.length,
-            scrollDirection: Axis.vertical,
-            itemBuilder: (BuildContext context, int index) {
-              widget.animationController.forward();
-              return listViews[index];
-            },
-          );
-        }
-      },
-    );
   }
 
     Widget getSearchBarUI() {
@@ -636,58 +618,6 @@ Widget scrollControlUI(){
       ),
     );
   }
-  getHotelViewList() {
-    print("niggsdsd");
-    print(politician.politicians);
-    
-    try{
-      print("niggsdsd");
-      for (int g = 0; g < politician.politicians.length; g++) {
-
-        // Adding existing count to index
-        int i = g + politicianCount;
-        
-        print("politicianCount");
-        print(politicianCount);
-
-        print("i");
-        print(i);
-
-
-        print("politician.politicians.length");
-        print(politician.politicians.length);
-
-        print(politician.politicians[i].name);
-        final int count = politician.politicians.length;
-        final Animation<double> animation =
-            Tween<double>(begin: 0.0, end: 1.0).animate(
-          CurvedAnimation(
-            parent: widget.animationController,
-            curve: Interval((1 / count) * i, 1.0, curve: Curves.fastOutSlowIn),
-          ),
-        );
-        listViews.add(
-          PoliticianListView(
-            callback: () {},
-            politicianData: politician.politicians[i],
-            animation: animation,
-            animationController: widget.animationController,
-          ),
-        ); 
-      }
-      // politicianCount += numberStart;
-      widget.animationController.forward();
-    } catch(_) {
-      print("request failed");
-      // widget.animationController.forward();
-      return Container(
-        child: Text(
-          "Data not found"
-        ),
-      );
-    }
-  }
-
 
   Widget getAppBarUI() {
     return Column(

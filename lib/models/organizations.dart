@@ -3,37 +3,92 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'user.dart';
 
+// Start and number
+int requestStart = 1;
+int numberStart = 7;
+
 // Getting general data
-Future<Organization> getNearbyMeApi() async {
-  String postBody = '{ "token" : "$globalToken" }';
-  var jsonBody = jsonDecode(postBody);
+Future<Organizations> getOrganizationsApi() async {
   print("starting");
-  final response = await http.post(
+  final response = await http.get(
     Uri.encodeFull(hostname + "/get_organization_data/"),
     headers: {
       "Accept": "application/json",
-      "Start": "application/json",
       "Authorization" : "Token " + globalToken.toString(),
+      "Start" : requestStart.toString(),
+      "Number" : numberStart.toString(),
     },
-    body: jsonBody
   );
 
   if (response.statusCode == 200) {
     
     print("response.body");
     print(response.body);
-    // Map<String, dynamic> map = json.decode(response.body);
-    // String jsonReturned = jsonEncode(response.body); // jsonEncode != .toString()
-    // print(jsonReturned); // out
+    // List<Organization> returned = List<Organization>.from(json.decode(response.body).map((model)=> Organization.fromJson(model)));
 
-    // Saving session
-    // SharedPref sharedPref = SharedPref();
-    // await sharedPref.save("general_data", map);
-    // print("map");
-    // print(map);
-    return Organization.fromJson(jsonDecode(response.body));
+    return Organizations.fromJson(jsonDecode(response.body));
   }
 }
+
+class Organizations {
+  List<Organization> organizations;
+
+  Organizations({this.organizations});
+
+  Organizations.fromJson(Map<String, dynamic> json) {
+    if (json['organizations'] != null) {
+      organizations = new List<Organization>();
+      json['organizations'].forEach((v) {
+        organizations.add(new Organization.fromJson(v));
+      });
+    }
+  }
+
+  Map<String, dynamic> toJson() {
+    final Map<String, dynamic> data = new Map<String, dynamic>();
+    if (this.organizations != null) {
+      data['organizations'] = this.organizations.map((v) => v.toJson()).toList();
+    }
+    return data;
+  }
+
+  // Future<String> getPoliticianData() async {
+  //   print('Getting user data\n\n\n');
+  //   print(globalToken);
+  //   print('Getting user data');
+  //   try {
+  //     var response = await http.get(
+  //       Uri.encodeFull(hostname + "/get_politician_data/"),
+  //       headers: {
+  //         "Accept": "application/json",
+  //         "Authorization" : "Token " + globalToken.toString(),
+  //         "Start" : requestStart.toString(),
+  //         "Number" : numberStart.toString(),
+  //       },
+  //     );
+  //     print(response.body);
+  //     Map<String, dynamic> map = json.decode(response.body);
+  //     var encodedJson = json.encode(response.body);
+  //     var requestResults = map["details"];
+  //     print("encodedJson");
+  //     var jsonString = response.body.toString();
+  //     print("jsonString");
+  //     print(jsonString);
+  //     print("jsonString");
+  //     // if(requestResults == '' || requestResults == null){
+  //     SharedPref sharedPref = SharedPref();
+  //     await sharedPref.save("politicians", jsonString);
+      
+  //     // }
+  //     return jsonString;
+  //   } catch(_) {
+  //     print("never");
+  //     return 'failed';
+  //   }
+  // }
+
+}
+
 
 class Organization {
   String name;
