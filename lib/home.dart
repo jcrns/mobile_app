@@ -138,7 +138,6 @@ class _HomeScreenState extends State<HomeScreen>
   }
   Future<bool> updateDataNearbyMe() async{
     Organizations futureOrganizations = await getOrganizationsApi();
-    nearbyMeOrganizationCount += numberStart;
     addNearbyMeListData(futureOrganizations);
     return true;
   }
@@ -459,10 +458,10 @@ Widget scrollControlUI(){
                   textAlign: TextAlign.left,
                 ),
               ),
-              Padding(
-                padding: const EdgeInsets.only(left: 10, right: 0, top: 0, bottom: 0),
-                child: SizedBox(
-                  height: 200.0,
+              Container(
+                height: 250,
+                child: Padding(
+                  padding: const EdgeInsets.only(left: 10, right: 0, top: 0, bottom: 0),
                   child: ListView.builder(
                     physics: ClampingScrollPhysics(),
                     shrinkWrap: true,
@@ -473,7 +472,7 @@ Widget scrollControlUI(){
                     }
                   ),
                 ),
-              ),
+              )
             ],
           );
         } else if (snapshot.hasError) {
@@ -487,6 +486,9 @@ Widget scrollControlUI(){
   }
 
   addNearbyMeListData(Organizations organizations){
+    // print(organizations.organizations.length);
+    print("\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nnearbyMeOrganizationCount");
+    print(nearbyMeOrganizationCount);
     for (int g = 0; g < organizations.organizations.length; g++) {
       int i = g + nearbyMeOrganizationCount;
         listViews.add(
@@ -496,6 +498,7 @@ Widget scrollControlUI(){
           ),
         ); 
     }
+    nearbyMeOrganizationCount += numberStart;
   }
 
   Widget categoriesSectionUI(){
